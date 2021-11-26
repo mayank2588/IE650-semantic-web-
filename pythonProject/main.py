@@ -3,6 +3,12 @@
 import pandas as pd
 from QuestionTemplates import QTemplate1
 
+import rdflib as rdf
+import random
+
+g = rdf.Graph()
+g.parse("D:\IE650-semantic-web--main\IE650-semantic-web--main\songs.xml")
+
 
 def exit_check(continue_game):
     while True:
@@ -29,7 +35,7 @@ def play_check(continue_game):
 
 def get_player_names():
     # read the players csv and extract series with names
-    players = pd.read_csv("resources/players.csv")
+    players = pd.read_csv("D:/IE650-semantic-web--main/IE650-semantic-web--main/pythonProject/resources/players.csv")
     player_names = players["player_name"]
     return player_names
 
@@ -43,14 +49,14 @@ def check_for_menu_return(user_input):
 
 
 def get_new_player_name():
-
     # define max player name length
     min_length_player_name = 4
     max_length_player_name = 15
 
     while True:
         # get the payer input
-        print("Enter a player name with minimal " + str(min_length_player_name) + " and maximal " + str(max_length_player_name) + " characters.")
+        print("Enter a player name with minimal " + str(min_length_player_name) + " and maximal " + str(
+            max_length_player_name) + " characters.")
         print("Enter RETURN to return to the previous menu:")
         player_name_input: str = input("Player name: ")
 
@@ -99,18 +105,92 @@ def create_player():
 
 
 if __name__ == '__main__':
-
     # gets through the whole introduction process of getting a new players name
     player_name = create_player()
 
     # select difficulty
-        # question tempaltes for different difficulties or diffuculty indicator
+    # question tempaltes for different difficulties or diffuculty indicator
 
     # start the quiz
 
     # safe results and exit quit (or maybe new round)
     print(player_name)
+    # Template1.is_usable_for_question()
 
-    #Template1.is_usable_for_question()
+
+def pick_song() -> object:
+    # random pick a song from the list
+    q = "\n SELECT distinct ?label ?album \n  WHERE { \n ?song rdfs:label ?label. \n ?song property:album ?album .\n }\n"
+    R = g.query(q)
+    l = []
+    for r in R:
+        l.append(r['label'])
+    song = random.choice(l)
+    return song
 
 
+def create_question1():
+
+    song = pick_song()
+    print("What is the name of the album of '" + song + "' ?")
+    # get answer
+    a = "\n SELECT distinct ?album \n  WHERE {\n    ?song rdfs:label '" + song + "'.\n ?song property:album ?album .\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["album"]
+    print(answer)
+
+
+def create_question2():
+    song = pick_song()
+    print("What is the artist of '" + song + "' ?")
+    # get answer
+    a = "\n SELECT distinct ?artist \n  WHERE {\n    ?song rdfs:label '" + song + "'.\n ?song property:artist ?artist .\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["artist"]
+    print(answer)
+
+
+def create_question3():
+    song = pick_song()
+    print("In what genre is '" + song + "' from?")
+    # get answer
+    a = "\n SELECT distinct ?genre \n  WHERE {\n    ?song rdfs:label '" + song + "'.\n ?song property:genre ?genre .\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["genre"]
+    print(answer)
+
+
+def create_question4():
+    song = pick_song()
+    print("Who is the producer of '" + song + "'?")
+    # get answer
+    a = "\n SELECT distinct ?producer \n  WHERE {\n    ?song rdfs:label '" + song + "'.\n ?song property:producer ?producer .\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["producer"]
+    print(answer)
+
+
+def create_question5():
+    song = pick_song()
+    print("Who wrote the lyrics '" + song + "'?")
+    # get answer
+    a = "\n SELECT distinct ?writer \n  WHERE {\n    ?song rdfs:label '" + song + "'.\n ?song property:writer ?writer .\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["writer"]
+    print(answer)
+
+
+def create_question6():
+    song = pick_song()
+    print("When was '" + song + "' released ? yyyy-mm-dd")
+    # get answer
+    a = "SELECT distinct ?releaseDate\n WHERE {\n?song rdfs:label '" + song + "'.\n ?song property:releaseDate ?releaseDate.\n }\n"
+    A = g.query(a)
+    for r in A:
+        answer = r["releaseDate"]
+    print(answer)
