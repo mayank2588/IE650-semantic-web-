@@ -103,21 +103,6 @@ def create_player():
             print("Please enter one of the given options")
             continue
 
-
-if __name__ == '__main__':
-    # gets through the whole introduction process of getting a new players name
-    player_name = create_player()
-
-    # select difficulty
-    # question tempaltes for different difficulties or diffuculty indicator
-
-    # start the quiz
-
-    # safe results and exit quit (or maybe new round)
-    print(player_name)
-    # Template1.is_usable_for_question()
-
-
 def pick_song() -> object:
     # random pick a song from the list
     q = "\n SELECT distinct ?label ?album \n  WHERE { \n ?song rdfs:label ?label. \n ?song property:album ?album .\n }\n"
@@ -194,3 +179,18 @@ def create_question6():
     for r in A:
         answer = r["releaseDate"]
     print(answer)
+
+if __name__ == '__main__':
+    # gets through the whole introduction process of getting a new players name
+    player_name = create_player()
+
+    # select difficulty
+    # question tempaltes for different difficulties or diffuculty indicator
+
+    # start the quiz
+
+    # safe results and exit quit (or maybe new round)
+    print(player_name)
+    # Template1.is_usable_for_question()
+
+
