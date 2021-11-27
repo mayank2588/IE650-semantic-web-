@@ -7,7 +7,7 @@ import rdflib as rdf
 import random
 
 g = rdf.Graph()
-g.parse("D:\IE650-semantic-web--main\IE650-semantic-web--main\songs.xml")
+g.parse("resources/songs.xml")
 
 
 def exit_check(continue_game):
@@ -35,7 +35,7 @@ def play_check(continue_game):
 
 def get_player_names():
     # read the players csv and extract series with names
-    players = pd.read_csv("D:/IE650-semantic-web--main/IE650-semantic-web--main/pythonProject/resources/players.csv")
+    players = pd.read_csv("resources/players.csv")
     player_names = players["player_name"]
     return player_names
 
@@ -67,8 +67,9 @@ def get_new_player_name():
 
         # check if player name is short enough
         if max_length_player_name >= len(player_name_input) > min_length_player_name:
-            player_names = get_player_names()
-            if player_name_input.lower() in player_names.values or player_name_input in player_names.values:
+            # get all player names in lower case, so the same letter combination can't be repicked
+            player_names = get_player_names().str.lower()
+            if player_name_input.lower() in player_names.values:
                 print("\nSorry. This name is already taken")
                 continue
             else:
@@ -102,6 +103,16 @@ def create_player():
         else:
             print("Please enter one of the given options")
             continue
+
+
+def safe_player_name_and_score(safe_player_name, safe_player_score):
+    # open file with "a" to append data to csv
+    file = open("resources/players.csv", "a")
+    # append player name and score
+    file.write("\n" + safe_player_name + ", " + str(safe_player_score))
+    # close file
+    file.close()
+
 
 def pick_song() -> object:
     # random pick a song from the list
@@ -180,6 +191,7 @@ def create_question6():
         answer = r["releaseDate"]
     print(answer)
 
+
 if __name__ == '__main__':
     # gets through the whole introduction process of getting a new players name
     player_name = create_player()
@@ -191,6 +203,7 @@ if __name__ == '__main__':
 
     # safe results and exit quit (or maybe new round)
     print(player_name)
+    safe_player_name_and_score(player_name, 100)
     # Template1.is_usable_for_question()
 
 
