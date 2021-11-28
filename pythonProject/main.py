@@ -193,6 +193,7 @@ def create_question6():
 
 
 if __name__ == '__main__':
+
     # gets through the whole introduction process of getting a new players name
     player_name = create_player()
 
