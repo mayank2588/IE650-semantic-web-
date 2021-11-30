@@ -5,6 +5,8 @@ from QuestionTemplates import QTemplate1
 
 import rdflib as rdf
 import random
+import re
+
 
 g = rdf.Graph()
 g.parse("resources/songs.xml")
@@ -134,10 +136,10 @@ def print_and_check_answers(correct_answer, alternative_answers):
     random.shuffle(answer_options)
 
     # print out the answer options
-    print("a: " + str(answer_options[0]))
-    print("b: " + str(answer_options[1]))
-    print("c: " + str(answer_options[2]))
-    print("d: " + str(answer_options[3]))
+    print("a: " + re.sub( r"\([^()]*\)", "" , str(answer_options[0])))
+    print("b: " + re.sub( r"\([^()]*\)", "" , str(answer_options[1])))
+    print("c: " + re.sub( r"\([^()]*\)", "" , str(answer_options[2])))
+    print("d: " + re.sub( r"\([^()]*\)", "" , str(answer_options[3])))
 
     # start loop to get an answer string
     while True:
@@ -231,7 +233,7 @@ def create_question_1():
     alternative_albums = result[1]
 
     # print question
-    print("\nWhat album is the song \"" + str(answer_song_and_album[0]) + "\" on?")
+    print("\nWhat album is the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_album[0])) + "\" on?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_album[1], alternative_albums)
@@ -259,7 +261,7 @@ def create_question_2():
     alternative_artists = result[1]
 
     # print question
-    print("\nWhat is the artist of the song \"" + str(answer_song_and_artist[0]) + "\"?")
+    print("\nWhat is the artist of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_artist[0])) + "\"?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_artist[1], alternative_artists)
@@ -287,7 +289,7 @@ def create_question_3():
     alternative_genres = result[1]
 
     # print question
-    print("\nWhat genre is the song \"" + str(answer_song_and_genre[0]) + "\" from?")
+    print("\nWhat genre is the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_genre[0])) + "\" from?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_genre[1], alternative_genres)
@@ -315,7 +317,7 @@ def create_question_4():
     alternative_producer = result[1]
 
     # print question
-    print("\nWho is the producer of the song \"" + str(answer_song_and_producer[0]) + "\" ?")
+    print("\nWho is the producer of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_producer[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_producer[1], alternative_producer)
@@ -343,7 +345,7 @@ def create_question_5():
     alternative_writer = result[1]
 
     # print question
-    print("\nWho is the writer of the song \"" + str(answer_song_and_writer[0]) + "\" ?")
+    print("\nWho is the writer of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_writer[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_writer[1], alternative_writer)
@@ -384,7 +386,7 @@ def create_question_6():
     alternative_answers = possible_answers.sample(n=3).tolist()
 
     # print question
-    print("\nIn which year was the song \"" + str(song_and_release_date[0]) + "\" ?")
+    print("\nIn which year was the song \"" + re.sub( r"\([^()]*\)", "" , str(song_and_release_date[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(song_and_release_date[1], alternative_answers)
@@ -419,7 +421,7 @@ def create_question_7():
     alternative_answers = possible_answers.sample(n=3).tolist()
 
     # print question
-    print("\nWhich song was sang by the artist \"" + str(artists_and_songs[1]) + "\" ?")
+    print("\nWhich song was sang by the artist \"" + re.sub( r"\([^()]*\)", "" , str(artists_and_songs[1])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(artists_and_songs[0], alternative_answers)
