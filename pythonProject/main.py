@@ -179,7 +179,7 @@ def query_song_and_info(query_string, name_add_info):
 
     # create a dictionary from the lists
     dictionary = {
-        'Song': song_list,
+        'song': song_list,
         name_add_info: add_info_list
     }
 
@@ -189,7 +189,7 @@ def query_song_and_info(query_string, name_add_info):
 
 def get_random_song_and_answer(data_frame, name_add_info):
     # filter out songs with non unique additional information
-    data_frame['count'] = data_frame.groupby('Song')['Song'].transform('size')
+    data_frame['count'] = data_frame.groupby('song')['song'].transform('size')
     df_cleaned = data_frame[data_frame['count'] == 1].drop('count', axis=1)
 
     # randomly select an observation from the data frame
@@ -223,7 +223,8 @@ def create_question_1():
     songs_albums_df = query_song_and_info(query_sing_song, "album")
 
     # get a random song and additional information, as well as alternative answer
-    result = get_random_song_and_answer(songs_albums_df, "album")
+    answer = get_random_song_and_answer(songs_albums_df, "album")
+    result = answer
 
     # get the correct and the alternative answers from the result
     answer_song_and_album = result[0]
@@ -389,6 +390,41 @@ def create_question_6():
     return print_and_check_answers(song_and_release_date[1], alternative_answers)
 
 
+def create_question_7():
+    # give user feedback that it might take a moment for the question to display
+    print("\n Loading question ...")
+
+    # create a query for artist and song
+    query_string_artist_and_song = "\n SELECT DISTINCT ?label ?artist" \
+                                   "\n WHERE {" \
+                                   "\n ?song rdfs:label ?label." \
+                                   "\n ?song property:artist  ?artist." \
+                                   "}"
+
+    # get a data frame with a song and and additional information about the song
+    artists_and_songs_data_df = query_song_and_info(query_string_artist_and_song, "artist")
+
+    # randomly select an observation from the data frame
+    artists_and_songs = artists_and_songs_data_df.sample(n=1)
+
+    # get the song and the album and cast to list
+    artists_and_songs = artists_and_songs.values.flatten().tolist()
+
+    # remove all records with the same additional information from the data frame
+    df_cleaned_1 = artists_and_songs_data_df[artists_and_songs_data_df['artist'] != artists_and_songs[1]]
+    df_cleaned_2 = df_cleaned_1[df_cleaned_1['song'] != artists_and_songs[0]]
+
+    # sample  alternative answers
+    possible_answers = pd.Series(df_cleaned_2['song'].unique())
+    alternative_answers = possible_answers.sample(n=3).tolist()
+
+    # print question
+    print("\nWhich song was sang by the artist \"" + str(artists_and_songs[1]) + "\" ?")
+
+    # call print_and_check_answer and return result
+    return print_and_check_answers(artists_and_songs[0], alternative_answers)
+
+
 if __name__ == '__main__':
     # gets through the whole introduction process of getting a new players name
     # player_name = create_player()
@@ -400,12 +436,8 @@ if __name__ == '__main__':
 
     # safe results and exit quit (or maybe new round)
     # print(player_name)
-    create_question_1()
-    create_question_2()
-    create_question_3()
-    create_question_4()
-    create_question_5()
-    create_question_6()
+    create_question_7()
+
 
     # safe_player_name_and_score(player_name, 100)
     # Template1.is_usable_for_question()
