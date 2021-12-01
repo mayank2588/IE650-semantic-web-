@@ -85,7 +85,6 @@ def print_high_score_list(number_of_player):
 
 
 def create_player():
-
     while True:
         # get the first user input - check of user wants to play or quit the quiz
         continue_game: str = input("\nWould you like to play a round?(yes/no)").lower()
@@ -163,7 +162,7 @@ def print_and_check_answers(correct_answer, alternative_answers):
             print("\nThis answer is correct!")
             return 1
         else:
-            print("\nSorry, this answer is not correct. The correct answer is \"" + str(correct_answer) + "\"")
+            print("\nSorry, this answer is not correct. The correct answer is \"" + re.sub(r"\([^()]*\)", "", str(correct_answer)) + "\"")
             return 0
 
 
@@ -427,6 +426,37 @@ def create_question_7():
     return print_and_check_answers(artists_and_songs[0], alternative_answers)
 
 
+def create_question_8():
+    # give user feedback that it might take a moment for the question to display
+    print("\n Loading question 8 ...")
+
+    # create a query for songs are grammy winner
+    query_string_song_with_Grammy = """ Select DISTINCT ?label 
+                                        WHERE{
+                                        ?song rdfs:label ?label.
+                                        ?song resource:Grammy_Award_for_Song_of_the_Year ?Grammy.
+                                        } """
+
+    sparqls_songs = g.query(query_string_song_with_Grammy)
+
+    song_list = []
+    for record in sparqls_songs:
+        song_list.append(str(record['label']))
+
+    grammy_song_df = pd.DataFrame(song_list)
+
+    grammy_song = grammy_song_df.sample(n=1)
+    grammy_song = grammy_song.values.flatten().tolist()
+
+    df_cleaned_1 = grammy_song_df[grammy_song_df[0] != grammy_song[0]]
+    possible_answers = pd.Series(df_cleaned_1[0].unique())
+    alternative_answers = possible_answers.sample(n=3).tolist()
+
+    print("\nWhich song of these has a grammy award?")
+
+    return print_and_check_answers(grammy_song[0], alternative_answers)
+
+
 def start_play_quiz(player_name):
     # set the highest player score
     highest_player_score = 0
@@ -446,6 +476,7 @@ def start_play_quiz(player_name):
         player_score = player_score + create_question_5()
         player_score = player_score + create_question_6()
         player_score = player_score + create_question_7()
+        player_score = player_score + create_question_8()
 
         # set the highest player score
         if player_score > highest_player_score:
@@ -479,7 +510,6 @@ def start_play_quiz(player_name):
 
 
 if __name__ == '__main__':
-
     # print out the introduction to the quiz
     print("Hello, welcome to the ... music quiz")
     print("Further introduction text")
@@ -493,11 +523,3 @@ if __name__ == '__main__':
     start_play_quiz(player_name)
 
     print(print_high_score_list(10))
-
-
-
-
-
-
-
-
