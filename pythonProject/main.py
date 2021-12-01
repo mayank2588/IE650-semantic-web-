@@ -1,12 +1,9 @@
 # this is a first approach to the music quiz application
 
 import pandas as pd
-from QuestionTemplates import QTemplate1
-
 import rdflib as rdf
 import random
 import re
-
 
 g = rdf.Graph()
 g.parse("resources/songs.xml")
@@ -68,8 +65,8 @@ def get_new_player_name():
             return None
 
         # check if player name is short enough
-        if max_length_player_name >= len(player_name_input) > min_length_player_name:
-            # get all player names in lower case, so the same letter combination can't be repicked
+        if max_length_player_name >= len(player_name_input) >= min_length_player_name:
+            # get all player names in lower case, so the same letter combination can't be re-picked
             player_names = get_player_names().str.lower()
             if player_name_input.lower() in player_names.values:
                 print("\nSorry. This name is already taken")
@@ -81,10 +78,13 @@ def get_new_player_name():
             continue
 
 
+def print_high_score_list(number_of_player):
+    high_score_list = pd.read_csv("resources/players.csv")
+    high_score_list.sort_values(by=['player_high_score'], inplace=True, ascending=False)
+    print(high_score_list.head(number_of_player))
+
+
 def create_player():
-    # print out the introduction to the quiz
-    print("Hello, welcome to the ... music quiz")
-    print("Further introduction text")
 
     while True:
         # get the first user input - check of user wants to play or quit the quiz
@@ -96,11 +96,12 @@ def create_player():
         # check for yes, if user dos not give a given option - ask again
         if play_check(continue_game):
             # get the users name if he wants to play
-            print("\nGreat! Then tell us your player name for the highscore list.")
+            print("\nGreat! Then tell us your player name for the high-score list.")
 
             # get the players name
             player_name = get_new_player_name()
             if player_name is not None:
+                print("\nThe name is valid. Let's start with the quiz")
                 return player_name
         else:
             print("Please enter one of the given options")
@@ -116,17 +117,6 @@ def safe_player_name_and_score(safe_player_name, safe_player_score):
     file.close()
 
 
-def pick_song() -> object:
-    # random pick a song from the list
-    q = "\n SELECT distinct ?label ?album \n  WHERE { \n ?song rdfs:label ?label. \n ?song property:album ?album .\n }\n"
-    R = g.query(q)
-    l = []
-    for r in R:
-        l.append(r['label'])
-    song = random.choice(l)
-    return song
-
-
 def print_and_check_answers(correct_answer, alternative_answers):
     # create the answer options
     answer_options = alternative_answers
@@ -136,16 +126,24 @@ def print_and_check_answers(correct_answer, alternative_answers):
     random.shuffle(answer_options)
 
     # print out the answer options
-    print("a: " + re.sub( r"\([^()]*\)", "" , str(answer_options[0])))
-    print("b: " + re.sub( r"\([^()]*\)", "" , str(answer_options[1])))
-    print("c: " + re.sub( r"\([^()]*\)", "" , str(answer_options[2])))
-    print("d: " + re.sub( r"\([^()]*\)", "" , str(answer_options[3])))
+    print("a: " + re.sub(r"\([^()]*\)", "", str(answer_options[0])))
+    print("b: " + re.sub(r"\([^()]*\)", "", str(answer_options[1])))
+    print("c: " + re.sub(r"\([^()]*\)", "", str(answer_options[2])))
+    print("d: " + re.sub(r"\([^()]*\)", "", str(answer_options[3])))
 
     # start loop to get an answer string
     while True:
 
         # get the input
         answer: str = input("\nPlease enter the corresponding letter (a, b, c, d) as yours answer: ").lower()
+
+        # check for quit option
+        if answer == "quit":
+            continue_quiz: str = input(
+                "If you exit the quiz your current progress will be lost. Do you like to continue with the quiz?(yes/no)")
+            exit_check(continue_quiz)
+            print("Than let's go on with the quiz")
+            continue
 
         # map answer to list numbers
         if answer == "a":
@@ -162,9 +160,11 @@ def print_and_check_answers(correct_answer, alternative_answers):
 
         # check if answer is correct
         if answer_options[list_num] == correct_answer:
-            return True
+            print("\nThis answer is correct!")
+            return 1
         else:
-            return False
+            print("\nSorry, this answer is not correct. The correct answer is \"" + str(correct_answer) + "\"")
+            return 0
 
 
 # takes a query for a song and one additional information
@@ -212,7 +212,7 @@ def get_random_song_and_answer(data_frame, name_add_info):
 
 def create_question_1():
     # give user feedback that it might take a moment for the question to display
-    print("\nLoading question ...")
+    print("\nLoading question 1 ...")
 
     # create query for song and album. Results will contain all available records which contain an album and a song.
     query_sing_song = "\n SELECT DISTINCT ?label ?album " \
@@ -233,7 +233,7 @@ def create_question_1():
     alternative_albums = result[1]
 
     # print question
-    print("\nWhat album is the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_album[0])) + "\" on?")
+    print("\nWhat album is the song \"" + re.sub(r"\([^()]*\)", "", str(answer_song_and_album[0])) + "\" on?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_album[1], alternative_albums)
@@ -241,7 +241,7 @@ def create_question_1():
 
 def create_question_2():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 2 ...")
 
     # create a query for artist and song
     query_string_song_and_artist = "\n SELECT DISTINCT ?label ?artist" \
@@ -261,7 +261,7 @@ def create_question_2():
     alternative_artists = result[1]
 
     # print question
-    print("\nWhat is the artist of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_artist[0])) + "\"?")
+    print("\nWhat is the artist of the song \"" + re.sub(r"\([^()]*\)", "", str(answer_song_and_artist[0])) + "\"?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_artist[1], alternative_artists)
@@ -269,7 +269,7 @@ def create_question_2():
 
 def create_question_3():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 3 ...")
 
     # create a query for artist and song
     query_string_song_and_genre = "\n SELECT DISTINCT ?label ?genre" \
@@ -289,7 +289,7 @@ def create_question_3():
     alternative_genres = result[1]
 
     # print question
-    print("\nWhat genre is the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_genre[0])) + "\" from?")
+    print("\nWhat genre is the song \"" + re.sub(r"\([^()]*\)", "", str(answer_song_and_genre[0])) + "\" from?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_genre[1], alternative_genres)
@@ -297,7 +297,7 @@ def create_question_3():
 
 def create_question_4():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 4 ...")
 
     # create a query for artist and song
     query_string_song_and_producer = "\n SELECT DISTINCT ?label ?producer" \
@@ -317,7 +317,7 @@ def create_question_4():
     alternative_producer = result[1]
 
     # print question
-    print("\nWho is the producer of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_producer[0])) + "\" ?")
+    print("\nWho is the producer of the song \"" + re.sub(r"\([^()]*\)", "", str(answer_song_and_producer[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_producer[1], alternative_producer)
@@ -325,7 +325,7 @@ def create_question_4():
 
 def create_question_5():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 5 ...")
 
     # create a query for artist and song
     query_string_song_and_writer = "\n SELECT DISTINCT ?label ?writer" \
@@ -345,7 +345,7 @@ def create_question_5():
     alternative_writer = result[1]
 
     # print question
-    print("\nWho is the writer of the song \"" + re.sub( r"\([^()]*\)", "" , str(answer_song_and_writer[0])) + "\" ?")
+    print("\nWho is the writer of the song \"" + re.sub(r"\([^()]*\)", "", str(answer_song_and_writer[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(answer_song_and_writer[1], alternative_writer)
@@ -353,7 +353,7 @@ def create_question_5():
 
 def create_question_6():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 6 ...")
 
     # create a query for artist and song
     query_string_song_and_release_date = "\n SELECT DISTINCT ?label ?releaseDate" \
@@ -366,7 +366,7 @@ def create_question_6():
     songs_release_data_df = query_song_and_info(query_string_song_and_release_date, "releaseDate")
 
     # filter out songs with non unique additional information
-    songs_release_data_df['count'] = songs_release_data_df.groupby('Song')['Song'].transform('size')
+    songs_release_data_df['count'] = songs_release_data_df.groupby('song')['song'].transform('size')
     songs_release_data_df_cleaned = songs_release_data_df[songs_release_data_df['count'] == 1].drop('count', axis=1)
 
     # remove exact date from the data frame
@@ -386,7 +386,7 @@ def create_question_6():
     alternative_answers = possible_answers.sample(n=3).tolist()
 
     # print question
-    print("\nIn which year was the song \"" + re.sub( r"\([^()]*\)", "" , str(song_and_release_date[0])) + "\" ?")
+    print("\nIn which year was the song \"" + re.sub(r"\([^()]*\)", "", str(song_and_release_date[0])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(song_and_release_date[1], alternative_answers)
@@ -394,7 +394,7 @@ def create_question_6():
 
 def create_question_7():
     # give user feedback that it might take a moment for the question to display
-    print("\n Loading question ...")
+    print("\n Loading question 7 ...")
 
     # create a query for artist and song
     query_string_artist_and_song = "\n SELECT DISTINCT ?label ?artist" \
@@ -421,25 +421,83 @@ def create_question_7():
     alternative_answers = possible_answers.sample(n=3).tolist()
 
     # print question
-    print("\nWhich song was sang by the artist \"" + re.sub( r"\([^()]*\)", "" , str(artists_and_songs[1])) + "\" ?")
+    print("\nWhich song was sang by the artist \"" + re.sub(r"\([^()]*\)", "", str(artists_and_songs[1])) + "\" ?")
 
     # call print_and_check_answer and return result
     return print_and_check_answers(artists_and_songs[0], alternative_answers)
 
 
-if __name__ == '__main__':
-    # gets through the whole introduction process of getting a new players name
-    # player_name = create_player()
+def start_play_quiz(player_name):
+    # set the highest player score
+    highest_player_score = 0
 
-    # select difficulty
-    # question tempaltes for different difficulties or diffuculty indicator
+    # set condition to break the loop
+    play_quiz = True
 
     # start the quiz
+    while play_quiz:
 
-    # safe results and exit quit (or maybe new round)
-    # print(player_name)
-    create_question_7()
+        # create player_score
+        player_score = 0
+        player_score = player_score + create_question_1()
+        player_score = player_score + create_question_2()
+        player_score = player_score + create_question_3()
+        player_score = player_score + create_question_4()
+        player_score = player_score + create_question_5()
+        player_score = player_score + create_question_6()
+        player_score = player_score + create_question_7()
+
+        # set the highest player score
+        if player_score > highest_player_score:
+            highest_player_score = player_score
+
+        # information about finishing the quiz
+        print("Add information here .---------------")
+
+        # ask if player wants to increase his score
+        print("\nThe current high-score list:\n")
+        print(print_high_score_list(10))
+        print("\nYour current score is " + str(player_score) + " point/s.")
+        print("Your current high-score is " + str(highest_player_score) + " point/s.")
+        print("Would you like to safe your hig-score and exit or play another round?")
+
+        while True:
+            # prompt player for decision
+            safe_and_exit: str = input(
+                "\nEnter \"exit\" to safe your high-score and exit the game. Enter \"continue\" to play another round.")
+
+            if safe_and_exit == "continue":
+                print("Great. Let's start another round")
+                break
+            elif safe_and_exit == "exit":
+                safe_player_name_and_score(player_name, highest_player_score)
+                play_quiz = False
+                print("Your final score of " + str(highest_player_score) + " got saved. Thanks for playing")
+                break
+            else:
+                print("Please enter a valid option\n")
 
 
-    # safe_player_name_and_score(player_name, 100)
-    # Template1.is_usable_for_question()
+if __name__ == '__main__':
+
+    # print out the introduction to the quiz
+    print("Hello, welcome to the ... music quiz")
+    print("Further introduction text")
+    print("While in the menu of the quiz you can navigate by using the provided commands"
+          "\n or using \"return\" to get to the previous menu")
+    print("Once the quiz is started you need to complete it. If you don't wish to complete "
+          "it your can enter \"quit\" as an option to quit the quiz and exit the program.")
+
+    # gets through the whole introduction process of getting a new players name
+    player_name = create_player()
+    start_play_quiz(player_name)
+
+    print(print_high_score_list(10))
+
+
+
+
+
+
+
+
