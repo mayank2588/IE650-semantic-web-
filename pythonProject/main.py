@@ -431,26 +431,37 @@ def create_question_8():
     print("\n Loading question 8 ...")
 
     # create a query for songs are grammy winner
-    query_string_song_with_Grammy = """ Select DISTINCT ?label 
-                                        WHERE{
+    query_string_song_with_Grammy = """ SELECT DISTINCT ?label 
+                                        WHERE {
                                         ?song rdfs:label ?label.
                                         ?song resource:Grammy_Award_for_Song_of_the_Year ?Grammy.
                                         } """
 
+    query_song_without_Grammy = "\n SELECT DISTINCT ?label " \
+                                "\n WHERE { " \
+                                "\n ?song rdfs:label ?label. " \
+                                "\n MINUS {?song resource:Grammy_Award_for_Song_of_the_Year ?Grammy}.\n " \
+                                "}\n"
+
     sparqls_songs = g.query(query_string_song_with_Grammy)
 
     song_list = []
+
     for record in sparqls_songs:
         song_list.append(str(record['label']))
 
     grammy_song_df = pd.DataFrame(song_list)
+    grammy_song = grammy_song_df.sample(n=1).values.flatten().tolist()
 
-    grammy_song = grammy_song_df.sample(n=1)
-    grammy_song = grammy_song.values.flatten().tolist()
+    alternative_songs = g.query(query_song_without_Grammy)
 
-    df_cleaned_1 = grammy_song_df[grammy_song_df[0] != grammy_song[0]]
-    possible_answers = pd.Series(df_cleaned_1[0].unique())
-    alternative_answers = possible_answers.sample(n=3).tolist()
+    song_list_without_Grammy = []
+
+    for record in alternative_songs:
+        song_list_without_Grammy.append(str(record['label']))
+
+    alternative_answers_df = pd.DataFrame(song_list_without_Grammy)
+    alternative_answers = alternative_answers_df.sample(n=3).values.flatten().tolist()
 
     print("\nWhich song of these has a grammy award?")
 
